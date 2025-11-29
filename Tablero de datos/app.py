@@ -21,6 +21,36 @@ def load_classification_model():
         st.error(f"Error cargando el modelo: {e}")
         return None, None
 
+
+
+def build_input_vector(user_inputs: dict):
+    row = dict.fromkeys(X.columns.tolist(), 0)
+
+    # Llenar valores numéricos
+    for key, value in user_inputs.items():
+        if key in row:
+            row[key] = value
+
+    # One-hot de room_type
+    if f"room_type_{user_inputs['room_type']}" in row:
+        row[f"room_type_{user_inputs['room_type']}"] = 1
+
+    # One-hot de grupo barrio
+    if f"neighbourhood_group_cleansed_{user_inputs['neigh_group']}" in row:
+        row[f"neighbourhood_group_cleansed_{user_inputs['neigh_group']}"] = 1
+
+    # One-hot de tipo de propiedad
+    if f"property_type_clean_{user_inputs['property_type_clean']}" in row:
+        row[f"property_type_clean_{user_inputs['property_type_clean']}"] = 1
+
+    return pd.DataFrame([row], columns=X.columns.tolist())
+
+def predecir_clasificacion(user_inputs):
+    X = build_input_vector(user_inputs)
+    X_scaled = scaler_clf.transform(X)
+    prob = float(model_clf.predict(X_scaled)[0][0])
+    clase = "Alta Rentabilidad" if prob >= 0.5 else "Baja Rentabilidad"
+    return clase, prob
 model_clf, scaler_clf = load_classification_model()
 # --- TÍTULO Y DESCRIPCIÓN ---
 st.title("Tablero Analítico de Airbnb - Barcelona")
