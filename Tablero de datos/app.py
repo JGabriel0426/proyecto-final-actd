@@ -5,12 +5,23 @@ import plotly.graph_objects as go
 import joblib
 import numpy as np
 import ast
+from tensorflow import keras
+import joblib
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(
     page_title="Dashboard Airbnb Barcelona",
     layout="wide"
 )
+def load_classification_model():
+    try:
+        model = keras.models.load_model("modelo_clasificacion.h5")
+        scaler = joblib.load("scaler_clasificacion.pkl")
+        return model, scaler
+    except Exception as e:
+        st.error(f"Error cargando el modelo: {e}")
+        return None, None
 
+model_clf, scaler_clf = load_classification_model()
 # --- TÍTULO Y DESCRIPCIÓN ---
 st.title("Tablero Analítico de Airbnb - Barcelona")
 st.markdown("""
