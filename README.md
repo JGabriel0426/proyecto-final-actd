@@ -7,3 +7,4 @@ Juanfer si lees esto no nos califiques tan duro D:
 
 Juanes si lees esto porfa haz commits, pa que se vea elegante.
 
+Gabo, acabo de leer esto y tu sabes que empecé a hacer el dash mucho antes que hicieramos el repo jeje (JuanFer no nos mates porfa D:)
