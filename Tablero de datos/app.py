@@ -21,10 +21,11 @@ def load_classification_model():
         st.error(f"Error cargando el modelo: {e}")
         return None, None
 
+features = ['host_response_time', 'host_response_rate', 'host_acceptance_rate', 'host_is_superhost', 'host_has_profile_pic', 'host_identity_verified', 'latitude', 'longitude', 'accommodates', 'bathrooms', 'bedrooms', 'beds', 'minimum_nights', 'maximum_nights', 'instant_bookable', 'calculated_host_listings_count', 'n_amenities', 'n_verifications', 'host_years', 'neighbourhood_cleansed_freq', 'room_type_Hotel room', 'room_type_Private room', 'room_type_Shared room', 'neighbourhood_group_cleansed_Eixample', 'neighbourhood_group_cleansed_Gràcia', 'neighbourhood_group_cleansed_Horta-Guinardó', 'neighbourhood_group_cleansed_Les Corts', 'neighbourhood_group_cleansed_Nou Barris', 'neighbourhood_group_cleansed_Sant Andreu', 'neighbourhood_group_cleansed_Sant Martí', 'neighbourhood_group_cleansed_Sants-Montjuïc', 'neighbourhood_group_cleansed_Sarrià-Sant Gervasi', 'property_type_clean_Entire rental unit', 'property_type_clean_Entire serviced apartment', 'property_type_clean_Other', 'property_type_clean_Private room in rental unit', 'property_type_clean_Room in hotel']
 
 
 def build_input_vector(user_inputs: dict):
-    row = dict.fromkeys(X.columns.tolist(), 0)
+    row = dict.fromkeys(features, 0)
 
     # Llenar valores numéricos
     for key, value in user_inputs.items():
@@ -43,7 +44,7 @@ def build_input_vector(user_inputs: dict):
     if f"property_type_clean_{user_inputs['property_type_clean']}" in row:
         row[f"property_type_clean_{user_inputs['property_type_clean']}"] = 1
 
-    return pd.DataFrame([row], columns=X.columns.tolist())
+    return pd.DataFrame([row], columns=features)
 
 def predecir_clasificacion(user_inputs):
     X = build_input_vector(user_inputs)
@@ -580,21 +581,43 @@ if df is not None:
         with clf_tab2:
             st.subheader("Clasificador - Uniandes")
 
-            input_reviews_Uni = st.slider(
-                "Número de Reseñas", 
-                0, 500, 20,
-                key="clf_uni_reviews"
-            )
-            input_score_Uni = st.slider(
-                "Puntuación (0-5)", 
-                0.0, 5.0, 4.0,
-                key="clf_uni_score"
-            )
+            st.write("Introduce las características del inmueble:")
 
-            if st.button("Clasificar (Uniandes)"):
-                prob = np.random.rand()
-                clase = "Alta Rentabilidad" if prob > 0.55 else "Baja Rentabilidad"
-                st.success(f"Predicción Uniandes: **{clase}** ({prob:.0%})")
+        col1, col2 = st.columns(2)
 
-            st.subheader("Matriz de Confusión - Uniandes")
-            st.info("Aquí se mostrará la matriz del modelo Uniandes.")
+        with col1:
+            accommodates = st.number_input("Acomoda:", 1, 16, 2)
+            bathrooms = st.number_input("Baños:", 0.0, 10.0, 1.0)
+            bedrooms = st.number_input("Habitaciones:", 0, 10, 1)
+            beds = st.number_input("Camas:", 1, 10, 1)
+            n_amenities = st.number_input("Número de amenities:", 0, 50, 10)
+
+        with col2:
+            room_type = st.selectbox("Tipo habitación:", ["Hotel room", "Private room", "Shared room"])
+            neigh_group = st.selectbox("Distrito:", [
+                "Eixample", "Gràcia", "Horta-Guinardó", "Les Corts",
+                "Nou Barris", "Sant Andreu", "Sant Martí",
+                "Sants-Montjuïc", "Sarrià-Sant Gervasi"
+            ])
+            property_type_clean = st.selectbox("Tipo de propiedad:", [
+                "Entire rental unit", "Entire serviced apartment", "Other",
+                "Private room in rental unit", "Room in hotel"
+            ])
+
+        if st.button("Clasificar (TEC)"):
+
+            user_inputs = {
+                "accommodates": accommodates,
+                "bathrooms": bathrooms,
+                "bedrooms": bedrooms,
+                "beds": beds,
+                "n_amenities": n_amenities,
+                "room_type": room_type,
+                "neigh_group": neigh_group,
+                "property_type_clean": property_type_clean
+            }
+
+            clase, prob = predecir_clasificacion(user_inputs)
+
+            st.success(f"Predicción: **{clase}**")
+            st.info(f"Probabilidad estimada: **{prob:.2%}**")
