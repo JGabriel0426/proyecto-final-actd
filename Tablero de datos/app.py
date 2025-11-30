@@ -23,7 +23,23 @@ def load_classification_model():
 
 features = ['host_response_time', 'host_response_rate', 'host_acceptance_rate', 'host_is_superhost', 'host_has_profile_pic', 'host_identity_verified', 'latitude', 'longitude', 'accommodates', 'bathrooms', 'bedrooms', 'beds', 'minimum_nights', 'maximum_nights', 'instant_bookable', 'calculated_host_listings_count', 'n_amenities', 'n_verifications', 'host_years', 'neighbourhood_cleansed_freq', 'room_type_Hotel room', 'room_type_Private room', 'room_type_Shared room', 'neighbourhood_group_cleansed_Eixample', 'neighbourhood_group_cleansed_Gràcia', 'neighbourhood_group_cleansed_Horta-Guinardó', 'neighbourhood_group_cleansed_Les Corts', 'neighbourhood_group_cleansed_Nou Barris', 'neighbourhood_group_cleansed_Sant Andreu', 'neighbourhood_group_cleansed_Sant Martí', 'neighbourhood_group_cleansed_Sants-Montjuïc', 'neighbourhood_group_cleansed_Sarrià-Sant Gervasi', 'property_type_clean_Entire rental unit', 'property_type_clean_Entire serviced apartment', 'property_type_clean_Other', 'property_type_clean_Private room in rental unit', 'property_type_clean_Room in hotel']
 
-
+mean_values={
+    'host_response_time': 0.4093179276928811,
+    'host_response_rate': 93.30227357435706,
+    'host_acceptance_rate': 85.25650391352963,
+    'host_is_superhost': 0.2410734252702199,
+    'host_has_profile_pic': 0.9625792023853895,
+    'host_identity_verified': 0.9543794260156541,
+    'latitude': 41.39229357513403,
+    'longitude': 2.166915574814925,
+    'minimum_nights': 14.928512858740216,
+    'maximum_nights': 491.2400298173686,
+    'instant_bookable': 0.42996645546030565,
+    'calculated_host_listings_count': 60.1769660827432,
+    'n_verifications': 2.096011926947447,
+    'host_years': 8.158900841932205,
+    'neighbourhood_cleansed_freq': 0.05039359579453739
+}
 def build_input_vector(user_inputs: dict):
     row = dict.fromkeys(features, 0)
 
@@ -45,14 +61,14 @@ def build_input_vector(user_inputs: dict):
         row[f"property_type_clean_{user_inputs['property_type_clean']}"] = 1
 
     return pd.DataFrame([row], columns=features)
-
+model_clf, scaler_clf = load_classification_model()
 def predecir_clasificacion(user_inputs):
     X = build_input_vector(user_inputs)
     X_scaled = scaler_clf.transform(X)
     prob = float(model_clf.predict(X_scaled)[0][0])
     clase = "Alta Rentabilidad" if prob >= 0.5 else "Baja Rentabilidad"
     return clase, prob
-model_clf, scaler_clf = load_classification_model()
+
 # --- TÍTULO Y DESCRIPCIÓN ---
 st.title("Tablero Analítico de Airbnb - Barcelona")
 st.markdown("""
@@ -583,41 +599,166 @@ if df is not None:
 
             st.write("Introduce las características del inmueble:")
 
-        col1, col2 = st.columns(2)
+            # -----------------------
+            # INPUTS PRINCIPALES
+            # -----------------------
+            col1, col2 = st.columns(2)
 
-        with col1:
-            accommodates = st.number_input("Acomoda:", 1, 16, 2)
-            bathrooms = st.number_input("Baños:", 0.0, 10.0, 1.0)
-            bedrooms = st.number_input("Habitaciones:", 0, 10, 1)
-            beds = st.number_input("Camas:", 1, 10, 1)
-            n_amenities = st.number_input("Número de amenities:", 0, 50, 10)
+            with col1:
+                accommodates = st.number_input("Acomoda:", 1, 16, 2)
+                bathrooms = st.number_input("Baños:", 0.0, 10.0, 1.0)
+                bedrooms = st.number_input("Habitaciones:", 0, 10, 1)
+                beds = st.number_input("Camas:", 1, 10, 1)
+                n_amenities = st.number_input("Número de amenities:", 0, 50, 10)
 
-        with col2:
-            room_type = st.selectbox("Tipo habitación:", ["Hotel room", "Private room", "Shared room"])
-            neigh_group = st.selectbox("Distrito:", [
-                "Eixample", "Gràcia", "Horta-Guinardó", "Les Corts",
-                "Nou Barris", "Sant Andreu", "Sant Martí",
-                "Sants-Montjuïc", "Sarrià-Sant Gervasi"
-            ])
-            property_type_clean = st.selectbox("Tipo de propiedad:", [
-                "Entire rental unit", "Entire serviced apartment", "Other",
-                "Private room in rental unit", "Room in hotel"
-            ])
+            with col2:
+                room_type = st.selectbox("Tipo habitación:", ["Hotel room", "Private room", "Shared room"])
+                neigh_group = st.selectbox("Distrito:", [
+                    "Eixample", "Gràcia", "Horta-Guinardó", "Les Corts",
+                    "Nou Barris", "Sant Andreu", "Sant Martí",
+                    "Sants-Montjuïc", "Sarrià-Sant Gervasi"
+                ])
+                property_type_clean = st.selectbox("Tipo de propiedad:", [
+                    "Entire rental unit", "Entire serviced apartment", "Other",
+                    "Private room in rental unit", "Room in hotel"
+                ])
 
-        if st.button("Clasificar (TEC)"):
 
-            user_inputs = {
-                "accommodates": accommodates,
-                "bathrooms": bathrooms,
-                "bedrooms": bedrooms,
-                "beds": beds,
-                "n_amenities": n_amenities,
-                "room_type": room_type,
-                "neigh_group": neigh_group,
-                "property_type_clean": property_type_clean
-            }
+            # ================================================================
+            # NUEVA SECCIÓN: Parámetros del host (valores iniciales = medias)
+            # ================================================================
+            st.markdown("---")
+            st.markdown("### Parámetros del Host (Valores sugeridos del dataset)")
 
-            clase, prob = predecir_clasificacion(user_inputs)
+            colh1, colh2 = st.columns(2)
 
-            st.success(f"Predicción: **{clase}**")
-            st.info(f"Probabilidad estimada: **{prob:.2%}**")
+            with colh1:
+                host_response_time = st.number_input(
+                    "Tiempo de respuesta del host (horas)",
+                    min_value=float(0.0), 
+                    max_value=float(72.0),
+                    value=float(mean_values["host_response_time"])
+                )
+
+                host_response_rate = st.number_input(
+                    "Tasa de respuesta del host (0-1)",
+                    min_value=float(0.0), 
+                    max_value=float(100.0),
+                    value=float(mean_values["host_response_rate"])
+                )
+
+                host_acceptance_rate = st.number_input(
+                    "Tasa de aceptación (0-1)",
+                    min_value=float(0.0), 
+                    max_value=float(100.0),
+                    value=float(mean_values["host_acceptance_rate"])
+                )
+                host_is_superhost = st.selectbox(
+                    "¿Es Superhost?",
+                    [0, 1],
+                    index=int(round(mean_values["host_is_superhost"]))
+                )
+                host_has_profile_pic = st.selectbox(
+                    "¿Tiene foto de perfil?",
+                    [0, 1],
+                    index=int(round(mean_values["host_has_profile_pic"]))
+                )
+
+            with colh2:
+                host_identity_verified = st.selectbox(
+                    "¿Identidad verificada?",
+                    [0, 1],
+                    index=int(round(mean_values["host_identity_verified"]))
+                )
+                minimum_nights = st.number_input(
+                    "Mínimo de noches",
+                    1, 365,
+                    int(mean_values["minimum_nights"])
+                )
+                maximum_nights = st.number_input(
+                    "Máximo de noches",
+                    1, 9999,
+                    int(mean_values["maximum_nights"])
+                )
+                calculated_host_listings_count = st.number_input(
+                    "Número de propiedades del host",
+                    0, 9999,
+                    int(mean_values["calculated_host_listings_count"])
+                )
+                n_verifications = st.number_input(
+                    "Número de verificaciones",
+                    0, 10,
+                    int(mean_values["n_verifications"])
+                )
+
+            st.markdown("### Ubicación y Frecuencia del Barrio")
+
+            coll1, coll2 = st.columns(2)
+
+            with coll1:
+                latitude = st.number_input(
+                    "Latitud",
+                    -90.0, 90.0,
+                    float(mean_values["latitude"])
+                )
+                host_years = st.number_input(
+                    "Años del host en plataforma",
+                    0, 20,
+                    int(mean_values["host_years"])
+                )
+
+            with coll2:
+                longitude = st.number_input(
+                    "Longitud",
+                    -180.0, 180.0,
+                    float(mean_values["longitude"])
+                )
+                neighbourhood_cleansed_freq = st.number_input(
+                    "Frecuencia relativa del barrio",
+                    0.0, 0.2,
+                    float(mean_values["neighbourhood_cleansed_freq"])
+                )
+
+
+            # ================================================================
+            # BOTÓN Y PREDICCIÓN
+            # ================================================================
+            if st.button("Clasificar (Uniandes)"):
+
+                # Inputs originales
+                user_inputs = {
+                    "accommodates": accommodates,
+                    "bathrooms": bathrooms,
+                    "bedrooms": bedrooms,
+                    "beds": beds,
+                    "n_amenities": n_amenities,
+                    "room_type": room_type,
+                    "neigh_group": neigh_group,
+                    "property_type_clean": property_type_clean,
+                }
+
+                # Inputs añadidos
+                user_inputs.update({
+                    "host_response_time": host_response_time,
+                    "host_response_rate": host_response_rate,
+                    "host_acceptance_rate": host_acceptance_rate,
+                    "host_is_superhost": host_is_superhost,
+                    "host_has_profile_pic": host_has_profile_pic,
+                    "host_identity_verified": host_identity_verified,
+                    "latitude": latitude,
+                    "longitude": longitude,
+                    "minimum_nights": minimum_nights,
+                    "maximum_nights": maximum_nights,
+                    "instant_bookable": 1,
+                    "calculated_host_listings_count": calculated_host_listings_count,
+                    "n_verifications": n_verifications,
+                    "host_years": host_years,
+                    "neighbourhood_cleansed_freq": neighbourhood_cleansed_freq
+                })
+
+                # Predicción
+                clase, prob = predecir_clasificacion(user_inputs)
+
+                st.success(f"Predicción: **{clase}**")
+                st.info(f"Probabilidad estimada: **{prob:.2%}**")
+
