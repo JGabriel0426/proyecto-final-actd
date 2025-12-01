@@ -1,0 +1,21 @@
+artifact_path: "file:c:/Users/jo_ga/OneDrive - Universidad de los andes/UNIANDES (1)/S\xE9\
+  ptimo semestre/proyecto-final-actd/Ciencia de datos regresi\xF3n/mlruns/307929673097389052/models/m-71fcc90c0ab4493087e2afc5ee8eca94/artifacts"
+flavors:
+  keras:
+    data: data
+    keras_backend: tensorflow
+    keras_version: 3.11.1
+    save_exported_model: false
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.keras
+    python_version: 3.12.10
+mlflow_version: 3.6.0
+model_id: m-71fcc90c0ab4493087e2afc5ee8eca94
+model_size_bytes: 670509
+model_uuid: m-71fcc90c0ab4493087e2afc5ee8eca94
+prompts: null
+run_id: 721d8c1f0d5345679d2f216842eefee1
+utc_time_created: '2025-12-01 02:57:49.564677'

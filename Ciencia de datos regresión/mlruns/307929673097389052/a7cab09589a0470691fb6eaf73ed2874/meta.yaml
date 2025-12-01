@@ -1,0 +1,15 @@
+artifact_uri: file:c:/Users/jo_ga/OneDrive - Universidad de los andes/UNIANDES (1)/Séptimo
+  semestre/proyecto-final-actd/Ciencia de datos regresión/mlruns/307929673097389052/a7cab09589a0470691fb6eaf73ed2874/artifacts
+end_time: 1764558383606
+entry_point_name: ''
+experiment_id: '307929673097389052'
+lifecycle_stage: active
+run_id: a7cab09589a0470691fb6eaf73ed2874
+run_name: reg_lr_5e_minus5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764558302398
+status: 3
+tags: []
+user_id: jo_ga
