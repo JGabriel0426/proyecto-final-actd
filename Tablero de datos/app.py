@@ -8,6 +8,8 @@ import ast
 from tensorflow import keras
 import joblib
 import tensorflow as tf
+from tensorflow import keras
+
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(
     page_title="Dashboard Airbnb Barcelona",
@@ -15,7 +17,7 @@ st.set_page_config(
 )
 def load_classification_model():
     try:
-        model = tf.keras.models.load_model("modelo_clasificacion.keras")
+        model = keras.models.load_model("modelo_clasificacion.keras")
         scaler = joblib.load("scaler_clasificacion.pkl")
         return model, scaler
     except Exception as e:
