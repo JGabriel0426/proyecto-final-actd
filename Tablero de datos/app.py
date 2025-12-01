@@ -103,14 +103,15 @@ Se divide en tres secciones: Análisis de Situación Actual, Predicción de Prec
 def load_data():
     try:
         df = pd.read_csv('data_clean_barcelona.csv')
-        
+        data = pd.read_csv('BarcelonaAbnb_limpio.csv')
         df['latitude'] = pd.to_numeric(df['latitude'], errors='coerce')
         df['longitude'] = pd.to_numeric(df['longitude'], errors='coerce')
-        
+        data['latitude'] = pd.to_numeric(data['latitude'], errors='coerce')
+        data['longitude'] = pd.to_numeric(data['longitude'], errors='coerce')
         # Eliminamos filas donde la conversión pudo haber fallado (si hay NaN)
         df = df.dropna(subset=['latitude', 'longitude'])
         
-        return df
+        return df,data
     except FileNotFoundError:
         st.error("No se encontró el archivo 'data_clean_barcelona.csv'. Por favor expórtalo desde tu notebook.")
         return None
@@ -124,7 +125,7 @@ def load_models():
     except:
         return None, None
 
-df = load_data()
+df,data = load_data()
 reg_model, clf_model = load_models()
 
 if df is not None:
@@ -226,7 +227,6 @@ if df is not None:
 
         # ================== APLICAR FILTROS ==================
         df_filtered = df.copy()
-
         if neighborhood_filter != "Todos":
             df_filtered = df_filtered[df_filtered["neighbourhood_cleansed"] == neighborhood_filter]
 
@@ -781,6 +781,64 @@ if df is not None:
                 # Predicción
                 clase, prob = predecir_clasificacion(user_inputs)
 
-                st.success(f"Predicción: **{clase}**")
-                st.info(f"Probabilidad estimada: **{prob:.2%}**")
+                st.success(f"Predicción tu inmueble es de: **{clase}**")
+                st.info(f"La probabilidad estimada de exito de tu inmueble es de: **{prob:.2%}**")
+            # X = data[features]  
+            # X_scaled = scaler_clf.transform(X)
+            # probs_all = model_clf.predict(X_scaled)[:, 0] 
+            probs_all = []
+            # df_30 = data.sample(frac=0.3, random_state=42)
+            # for idx, row in df_30.iterrows():
+            #     a=pd.DataFrame([row], columns=features)
+            #     X_scaled = scaler_clf.transform(a)
+            #     prob = float(model_clf.predict(X_scaled)[0][0])
+            #     probs_all.append(prob)
+            # df_30["probs_all"] = probs_all
+            st.markdown("## Probabilidad de rentabilidad por zona y precio")
+            barrios = ["Todos"] + sorted(df["neighbourhood_cleansed"].unique().tolist())
+            selected_barrio = st.selectbox("Selecciona barrio:", barrios)
 
+            # Filtro por rango de precio
+            min_price = int(df["price"].min())
+            max_price = int(df["price"].max())
+            price_range = st.slider("Rango de precio:", min_value=min_price, max_value=max_price,
+                                    value=(min_price, max_price))
+
+            # ---------- FILTRO DEL DATAFRAME ----------
+            df_filtered = df.copy()
+
+            # Filtra por barrio
+            if selected_barrio != "Todos":
+                df_filtered = df_filtered[df_filtered["neighbourhood_cleansed"] == selected_barrio]
+
+            # Filtra por rango de precio
+            df_filtered = df_filtered[(df_filtered["price"] >= price_range[0]) & 
+                                    (df_filtered["price"] <= price_range[1])]
+
+            # ---------- CÁLCULO DE RECOMENDADOS ----------
+            q75_price = df_filtered["price"].quantile(0.75)
+            df_filtered["recommended"] = np.where(
+                (df_filtered["review_scores_rating"] >= 4.5) &
+                (df_filtered["number_of_reviews"] >= 10) &
+                (df_filtered["price"] <= q75_price),
+                1,
+                0
+            )
+
+            # ---------- GRÁFICO ----------
+            fig_map_rent = px.scatter_mapbox(
+                df_filtered,
+                lat="latitude",
+                lon="longitude",
+                color="recommended",  
+                size="price",  
+                color_continuous_scale=px.colors.sequential.Viridis,
+                size_max=15,
+                zoom=12,
+                mapbox_style="carto-positron",
+ 
+                title="Propiedades Recomendadas por Ubicación"
+            )
+
+            st.plotly_chart(fig_map_rent, use_container_width=True)
+            
