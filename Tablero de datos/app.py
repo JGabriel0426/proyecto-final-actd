@@ -7,6 +7,7 @@ import numpy as np
 import ast
 from tensorflow import keras
 import joblib
+import tensorflow as tf
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(
     page_title="Dashboard Airbnb Barcelona",
@@ -14,12 +15,13 @@ st.set_page_config(
 )
 def load_classification_model():
     try:
-        model = keras.models.load_model("modelo_clasificacion.h5")
+        model = tf.keras.models.load_model("modelo_clasificacion.keras")
         scaler = joblib.load("scaler_clasificacion.pkl")
         return model, scaler
     except Exception as e:
         st.error(f"Error cargando el modelo: {e}")
         return None, None
+
 
 features = ['host_response_time', 'host_response_rate', 'host_acceptance_rate', 'host_is_superhost', 'host_has_profile_pic', 'host_identity_verified', 'latitude', 'longitude', 'accommodates', 'bathrooms', 'bedrooms', 'beds', 'minimum_nights', 'maximum_nights', 'instant_bookable', 'calculated_host_listings_count', 'n_amenities', 'n_verifications', 'host_years', 'neighbourhood_cleansed_freq', 'room_type_Hotel room', 'room_type_Private room', 'room_type_Shared room', 'neighbourhood_group_cleansed_Eixample', 'neighbourhood_group_cleansed_Gràcia', 'neighbourhood_group_cleansed_Horta-Guinardó', 'neighbourhood_group_cleansed_Les Corts', 'neighbourhood_group_cleansed_Nou Barris', 'neighbourhood_group_cleansed_Sant Andreu', 'neighbourhood_group_cleansed_Sant Martí', 'neighbourhood_group_cleansed_Sants-Montjuïc', 'neighbourhood_group_cleansed_Sarrià-Sant Gervasi', 'property_type_clean_Entire rental unit', 'property_type_clean_Entire serviced apartment', 'property_type_clean_Other', 'property_type_clean_Private room in rental unit', 'property_type_clean_Room in hotel']
 
@@ -63,11 +65,29 @@ def build_input_vector(user_inputs: dict):
     return pd.DataFrame([row], columns=features)
 model_clf, scaler_clf = load_classification_model()
 def predecir_clasificacion(user_inputs):
+    if model_clf is None or scaler_clf is None:
+        return "Error", 0.0
+
     X = build_input_vector(user_inputs)
-    X_scaled = scaler_clf.transform(X)
-    prob = float(model_clf.predict(X_scaled)[0][0])
+    print(X)
+    'ayuda'
+    X
+
+    try:
+        X_scaled = scaler_clf.transform(X)
+    except Exception as e:
+        st.error(f"Error escalando las entradas: {e}")
+        return "Error", 0.0
+
+    try:
+        prob = float(model_clf.predict(X_scaled)[0][0])
+    except Exception as e:
+        st.error(f"Error haciendo la predicción: {e}")
+        return "Error", 0.0
+
     clase = "Alta Rentabilidad" if prob >= 0.5 else "Baja Rentabilidad"
     return clase, prob
+
 
 # --- TÍTULO Y DESCRIPCIÓN ---
 st.title("Tablero Analítico de Airbnb - Barcelona")
