@@ -8,3 +8,5 @@ Juanfer si lees esto no nos califiques tan duro D:
 Juanes si lees esto porfa haz commits, pa que se vea elegante.
 
 Gabo, acabo de leer esto y tu sabes que empecé a hacer el dash mucho antes que hicieramos el repo jeje (JuanFer no nos mates porfa D:)
+
+El link de la presentación es: https://www.canva.com/design/DAG6ZOsMy8A/6rttMxGhR2HCTKWCyHY3BQ/edit?utm_content=DAG6ZOsMy8A&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
